@@ -4,13 +4,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+from model import NeuralNet
 
 with open ('intents.json', 'r') as f:
     intents = json.load(f) 
 
 all_words = []
 tags = []
-labeled = []     # it's a list of tuples that will store the words with their tags
+wnt = []     # it's a list of tuples that will store the words with their tags
 
 # Tokenizing the corpora and storing it
 for intent in intents['intents']:
@@ -20,7 +21,7 @@ for intent in intents['intents']:
         # same tokenize fxn that we made in utils
         w = tokenize(pattern)
         all_words.extend(w)
-        labels.append((w, tag))
+        wnt.append((w, tag))
 
 # stemming all the words and ignoring punctuations
 ignore_words = ['?', '!', ',', '.']
@@ -31,7 +32,7 @@ all_words = sorted(set(all_words))  # To sort & remove the duplicates
 X_train = []
 y_train = []
 
-for (pattern_sentence, tag) in labeled:
+for (pattern_sentence, tag) in wnt:
     # X: bag of words for each pattern_sentence
     bag = bag_of_words(pattern_sentence, all_words)
     X_train.append(bag)
@@ -79,4 +80,48 @@ train_loader = DataLoader(dataset=dataset,
                           num_workers=0)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+model = NeuralNet(input_size, hidden_size, output_size).to(device)
+
+# Loss and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+# Train the model
+for epoch in range(num_epochs):
+    for (words, labels) in train_loader:
+        words = words.to(device)
+        labels = labels.to(dtype=torch.long).to(device)
+        
+        # Forward pass
+        outputs = model(words)
+        # if y would be one-hot, we must apply
+        # labels = torch.max(labels, 1)[1]
+        loss = criterion(outputs, labels)
+        
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+    if (epoch+1) % 100 == 0:
+        print (f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+
+
+print(f'final loss: {loss.item():.4f}')
+
+# Saving our trained model
+data = {
+"model_state": model.state_dict(),
+"input_size": input_size,
+"hidden_size": hidden_size,
+"output_size": output_size,
+"all_words": all_words,
+"tags": tags
+}
+
+FILE = "data.pth"
+torch.save(data, FILE)
+
+print(f'training complete. file saved to {FILE}')
 
