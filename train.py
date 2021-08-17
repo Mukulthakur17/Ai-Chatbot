@@ -71,6 +71,7 @@ output_size = len(tags)
 #print(input_size, output_size)
 
 
+# Dataloader has been used to parallelize the data loading as this boosts up the speed and saves memory.
 dataset = ChatDataset()
 train_loader = DataLoader(dataset=dataset,
                           batch_size=batch_size,
