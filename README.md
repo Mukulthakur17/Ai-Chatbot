@@ -3,8 +3,8 @@
 
 # How to use?
 ## Step 1:
-Run: python train.py
-### This will give a "data.pth" file
+Run: `python train.py`
+### This will give a `data.pth` file
 
 ## Step 2:
-Run: python chat.py
+Run: `python chat.py`
