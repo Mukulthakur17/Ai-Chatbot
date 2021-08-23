@@ -4,7 +4,13 @@
 # How to use?
 ## Step 1:
 Run: `python train.py`
-### This will give a `data.pth` file
+#### This will give a `data.pth` file
 
 ## Step 2:
 Run: `python chat.py`
+### Now you can start chatting
+![app-token](examples/1.png)
+
+## Step 3:
+#### To Exit the bot
+Run: `Quit`
